@@ -1,10 +1,8 @@
-import React from "react";
-import logo from "./logo.svg";
 import "./App.css";
-import { UserSignUp } from "./component/UserSignUp";
+import { UserSignUpPage } from "./pages/UserSignUpPage";
 
 function App() {
-  return <UserSignUp />;
+  return <UserSignUpPage />;
 }
 
 export default App;

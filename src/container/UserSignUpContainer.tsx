@@ -4,7 +4,6 @@ import { UserSignUpComponent } from "../component/UserSignUpComponent";
 import axios, { AxiosError } from "axios";
 
 interface IUserSignUp {
-  errors: any;
   username: string;
   displayName: string;
   email: string;
@@ -15,7 +14,14 @@ interface IUserSignUp {
 
 export const UserSignUpContainer = () => {
   const [formData, setFormData] = useState<IUserSignUp>({
-    errors: {},
+    username: "",
+    displayName: "",
+    email: "",
+    password: "",
+    pendingApiCall: false,
+    showPassword: false,
+  });
+  const [errors, setErrors] = useState<IUserSignUp>({
     username: "",
     displayName: "",
     email: "",
@@ -33,24 +39,17 @@ export const UserSignUpContainer = () => {
     e.preventDefault();
     setFormData((prevData) => ({ ...prevData, pendingApiCall: true }));
     try {
-      await axios.post("/api/1.0/users", formData);
+      const response = await axios.post("/api/1.0/users", formData);
+      console.log(response);
     } catch (error) {
-      const axiosError = error as AxiosError;
-      console.log(axiosError);
-
-      formData.errors = axiosError.response?.data as {
-        validationErrors: {
-          username: string;
-          displayName: string;
-          email: string;
-          password: string;
-        };
-      };
-
-      console.log(
-        "Error Data from Backend:",
-        formData.errors.validationErrors.username
-      );
+      const axiosError = error as AxiosError<any>;
+      if (
+        axiosError.response?.data &&
+        axiosError.response.data.status === 400
+      ) {
+        setErrors(axiosError.response?.data.validationErrors);
+        console.log(errors);
+      }
     }
     setFormData((prevData) => ({ ...prevData, pendingApiCall: false }));
   };
@@ -61,28 +60,28 @@ export const UserSignUpContainer = () => {
       id: "username",
       name: "username",
       placeholder: "Username",
-      validError: formData.errors.username,
+      validError: errors.username,
     },
     {
       label: "Display Name",
       id: "dname",
       name: "displayName",
       placeholder: "Display Name",
-      validError: formData.errors.displayName,
+      validError: errors.displayName,
     },
     {
       label: "E-mail",
       id: "email",
       name: "email",
       placeholder: "example@mail.com",
-      validError: formData.errors.email,
+      validError: errors.email,
     },
     {
       label: "Password",
       id: "password",
       name: "password",
       placeholder: "••••••••",
-      validError: formData.errors.password,
+      validError: errors.password,
     },
   ];
 
@@ -102,6 +101,7 @@ export const UserSignUpContainer = () => {
                   id={field.id}
                   name={field.name}
                   placeholder={field.placeholder}
+                  validError={field.validError}
                 />
               ) : (
                 <UserSignUpComponent

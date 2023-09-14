@@ -10,6 +10,7 @@ interface IUserSignUp {
   password: string;
   pendingApiCall: boolean;
   showPassword: boolean;
+  successMessage: string;
 }
 
 export const UserSignUpContainer = () => {
@@ -20,6 +21,7 @@ export const UserSignUpContainer = () => {
     password: "",
     pendingApiCall: false,
     showPassword: false,
+    successMessage: "",
   });
   const [errors, setErrors] = useState<IUserSignUp>({
     username: "",
@@ -28,11 +30,17 @@ export const UserSignUpContainer = () => {
     password: "",
     pendingApiCall: false,
     showPassword: false,
+    successMessage: "",
   });
+  const [showSuccessMessage, setSuccessMessage] = useState(true);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [name]: value }));
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: "",
+    }));
   };
 
   const handleSubmit = async (e: React.ChangeEvent<HTMLFormElement>) => {
@@ -41,6 +49,15 @@ export const UserSignUpContainer = () => {
     try {
       const response = await axios.post("/api/1.0/users", formData);
       console.log(response);
+
+      setTimeout(() => {
+        setSuccessMessage(false);
+      }, 3000);
+      setFormData((prevData) => ({
+        ...prevData,
+        successMessage: response.data.message,
+      }));
+      console.log(formData.successMessage);
     } catch (error) {
       const axiosError = error as AxiosError<any>;
       if (
@@ -127,6 +144,14 @@ export const UserSignUpContainer = () => {
           >
             Sign UP!
           </button>
+          {showSuccessMessage && (
+            <div
+              className="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400"
+              role="alert"
+            >
+              <span className="font-medium">{formData.successMessage}</span>{" "}
+            </div>
+          )}
         </form>
       </div>
     </section>
